@@ -1,0 +1,41 @@
+version: '3.7'
+services:
+
+  # Apache ZooKeeper - Distributed Coordination Service: https://zookeeper.apache.org/
+  zookeeper:
+    image: zookeeper:${ZOOKEEPER_VERSION}
+    container_name: zookeeper
+    restart: unless-stopped
+    ports:
+      - ${ZOOKEEPER_HOST_PORT}:${ZOOKEEPER_CONTAINER_PORT}
+    volumes:
+      # Configuration
+      - zookeeper-conf:/conf
+      # Persistence
+      - zookeeper-data:/data
+
+  # Apache Kafka - Distributed Streaming Platform: https://kafka.apache.org/
+  kafka:
+    image: wurstmeister/kafka:${KAFKA_VERSION}
+    container_name: kafka
+    restart: unless-stopped
+    depends_on:
+      - zookeeper
+    ports:
+      - ${KAFKA_HOST_PORT}:${KAFKA_CONTAINER_PORT}
+    volumes:
+      # Persistence
+      - kafka-data:/kafka
+    env_file:
+      - ./kafka/.env
+
+volumes:
+  zookeeper-conf:
+    external:
+      name: ${ZOOKEEPER_CONFIGURATION_VOLUME}
+  zookeeper-data:
+    external:
+      name: ${ZOOKEEPER_VOLUME}
+  kafka-data:
+    external:
+      name: ${KAFKA_VOLUME}
